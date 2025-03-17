@@ -17,6 +17,7 @@ class ScannerModule : public ModuleManager::Instance {
 struct ExcludedFreq {
     double frequency;
     double bandwidth;
+    bool selected;  // Add selection state
 };
 
 public:
@@ -45,7 +46,7 @@ public:
     }
 
 private:
-    
+    std::vector<ExcludedFreq> excludedFreqs;  // Store excluded frequencies
 
     void drawExcludedFreqTable() {
         // Excluded Frequency Table
@@ -73,7 +74,15 @@ private:
 
         ImGui::TableSetColumnIndex(1);
         if (ImGui::Button(("Remove##scanner_rem_" + name).c_str(), ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
-            // Remove button logic will go here
+            // Remove selected frequencies
+            excludedFreqs.erase(
+                std::remove_if(
+                    excludedFreqs.begin(),
+                    excludedFreqs.end(),
+                    [](const ExcludedFreq& freq) { return freq.selected; }
+                ),
+                excludedFreqs.end()
+            );
         }
 
         ImGui::TableSetColumnIndex(2);
@@ -87,6 +96,31 @@ private:
             ImGui::TableSetupColumn("Frequency", ImGuiTableColumnFlags_WidthStretch);
             ImGui::TableSetupColumn("Bandwidth", ImGuiTableColumnFlags_WidthStretch);
             ImGui::TableHeadersRow();
+            
+            // Display all excluded frequencies
+            for (auto& freq : excludedFreqs) {
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                
+                // Make the entire row selectable
+                if (ImGui::Selectable(("##scanner_excl_freq_" + std::to_string(freq.frequency)).c_str(), &freq.selected, ImGuiSelectableFlags_SpanAllColumns)) {
+                    // If shift or control isn't pressed, deselect all others
+                    if (!ImGui::GetIO().KeyShift && !ImGui::GetIO().KeyCtrl) {
+                        for (auto& otherFreq : excludedFreqs) {
+                            if (&otherFreq != &freq) {
+                                otherFreq.selected = false;
+                            }
+                        }
+                    }
+                }
+                
+                ImGui::SameLine();
+                ImGui::Text("%.0f", freq.frequency);
+                
+                ImGui::TableSetColumnIndex(1);
+                ImGui::Text("%.0f", freq.bandwidth);
+            }
+            
             ImGui::EndTable();
         }
     }
@@ -114,7 +148,8 @@ private:
             }
 
             if (ImGui::Button("Add")) {
-                // TODO: Add the frequency to the excluded frequencies list
+                // Add the new frequency to the list
+                excludedFreqs.push_back(newExcludedFreq);
                 open = false;
             }
             ImGui::SameLine();
