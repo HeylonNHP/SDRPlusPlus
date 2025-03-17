@@ -13,6 +13,12 @@ SDRPP_MOD_INFO{
 };
 
 class ScannerModule : public ModuleManager::Instance {
+
+struct ExcludedFreq {
+    double frequency;
+    double bandwidth;
+};
+
 public:
     ScannerModule(std::string name) {
         this->name = name;
@@ -87,8 +93,14 @@ private:
         if (ImGui::BeginPopup(id.c_str(), ImGuiWindowFlags_NoResize)) {
             ImGui::LeftLabel("Frequency");
             ImGui::SetNextItemWidth(menuWidth - ImGui::GetCursorPosX());
-            if (ImGui::InputDouble(("##scanner_add_freq_input" + name).c_str(), &newExcludedFreq, 100.0, 100000.0, "%0.0f")) {
-                newExcludedFreq = round(newExcludedFreq);
+            if (ImGui::InputDouble(("##scanner_add_freq_input" + name).c_str(), &newExcludedFreq.frequency, 100.0, 100000.0, "%0.0f")) {
+                newExcludedFreq.frequency = round(newExcludedFreq.frequency);
+            }
+
+            ImGui::LeftLabel("Bandwidth");
+            ImGui::SetNextItemWidth(menuWidth - ImGui::GetCursorPosX());
+            if (ImGui::InputDouble(("##scanner_add_bw_input" + name).c_str(), &newExcludedFreq.bandwidth, 100.0, 100000.0, "%0.0f")) {
+                newExcludedFreq.bandwidth = round(newExcludedFreq.bandwidth);
             }
 
             if (ImGui::Button("Add")) {
@@ -337,7 +349,7 @@ private:
 
     std::string name;
     bool enabled = true;
-    double newExcludedFreq = 0.0;  // For the new excluded frequency dialog
+    ExcludedFreq newExcludedFreq;  // For the new excluded frequency dialog
     bool newExcludedFreqOpen = false;  // Flag to track if the dialog is open
     
     bool running = false;
