@@ -39,31 +39,30 @@ public:
     }
 
 private:
-    static void menuHandler(void* ctx) {
-        ScannerModule* _this = (ScannerModule*)ctx;
-        float menuWidth = ImGui::GetContentRegionAvail().x;
-        
+    
+
+    void drawExcludedFreqTable() {
         // Excluded Frequency Table
         ImGui::Spacing();
         ImGui::TextUnformatted("Excluded frequencies");
         ImGui::Separator();
         ImGui::Spacing();
 
-        ImGui::BeginTable(("scanner_btn_table" + _this->name).c_str(), 3);
+        ImGui::BeginTable(("scanner_btn_table" + name).c_str(), 3);
         ImGui::TableNextRow();
         
         ImGui::TableSetColumnIndex(0);
-        if (ImGui::Button(("Add##scanner_add_" + _this->name).c_str(), ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
-            // Add button logic will go here
+        if (ImGui::Button(("Add##scanner_add_" + name).c_str(), ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
+            newExcludedFreqOpen = true;
         }
 
         ImGui::TableSetColumnIndex(1);
-        if (ImGui::Button(("Remove##scanner_rem_" + _this->name).c_str(), ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
+        if (ImGui::Button(("Remove##scanner_rem_" + name).c_str(), ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
             // Remove button logic will go here
         }
 
         ImGui::TableSetColumnIndex(2);
-        if (ImGui::Button(("Edit##scanner_edt_" + _this->name).c_str(), ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
+        if (ImGui::Button(("Edit##scanner_edt_" + name).c_str(), ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
             // Edit button logic will go here
         }
 
@@ -74,6 +73,42 @@ private:
             ImGui::TableHeadersRow();
             ImGui::EndTable();
         }
+    }
+
+    bool newExcludedFreqDialog() {
+        bool open = true;
+        gui::mainWindow.lockWaterfallControls = true;
+
+        float menuWidth = ImGui::GetContentRegionAvail().x;
+
+        std::string id = "Add##scanner_add_freq_popup_" + name;
+        ImGui::OpenPopup(id.c_str());
+
+        if (ImGui::BeginPopup(id.c_str(), ImGuiWindowFlags_NoResize)) {
+            ImGui::LeftLabel("Frequency");
+            ImGui::SetNextItemWidth(menuWidth - ImGui::GetCursorPosX());
+            if (ImGui::InputDouble(("##scanner_add_freq_input" + name).c_str(), &newExcludedFreq, 100.0, 100000.0, "%0.0f")) {
+                newExcludedFreq = round(newExcludedFreq);
+            }
+
+            if (ImGui::Button("Add")) {
+                // TODO: Add the frequency to the excluded frequencies list
+                open = false;
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Cancel")) {
+                open = false;
+            }
+            ImGui::EndPopup();
+        }
+        return open;
+    }
+
+    static void menuHandler(void* ctx) {
+        ScannerModule* _this = (ScannerModule*)ctx;
+        float menuWidth = ImGui::GetContentRegionAvail().x;
+        
+        _this->drawExcludedFreqTable();
         
         if (_this->running) { ImGui::BeginDisabled(); }
         ImGui::LeftLabel("Start");
@@ -147,6 +182,10 @@ private:
             else {
                 ImGui::TextColored(ImVec4(1, 1, 0, 1), "Status: Scanning");
             }
+        }
+
+        if (_this->newExcludedFreqOpen) {
+            _this->newExcludedFreqOpen = _this->newExcludedFreqDialog();
         }
     }
 
@@ -298,6 +337,8 @@ private:
 
     std::string name;
     bool enabled = true;
+    double newExcludedFreq = 0.0;  // For the new excluded frequency dialog
+    bool newExcludedFreqOpen = false;  // Flag to track if the dialog is open
     
     bool running = false;
     //std::string selectedVFO = "Radio";
