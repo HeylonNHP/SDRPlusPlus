@@ -361,6 +361,20 @@ private:
             scanDir ? (freq <= stopFreq) : (freq >= startFreq);
             freq += scanDir ? interval : -interval) {
 
+            // Check if frequency is within any excluded range
+            bool isExcluded = false;
+            for (const auto& excluded : excludedFreqs) {
+                double excludedLow = excluded.frequency - (excluded.bandwidth / 2.0);
+                double excludedHigh = excluded.frequency + (excluded.bandwidth / 2.0);
+                if (freq >= excludedLow && freq <= excludedHigh) {
+                    isExcluded = true;
+                    break;
+                }
+            }
+            if (isExcluded) {
+                continue;
+            }
+
             // Check if signal is within bounds
             if (freq - (vfoWidth/2.0) < wfStart) { break; }
             if (freq + (vfoWidth/2.0) > wfEnd) { break; }
