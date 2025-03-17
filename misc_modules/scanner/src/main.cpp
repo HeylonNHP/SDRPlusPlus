@@ -49,6 +49,26 @@ private:
         ImGui::Separator();
         ImGui::Spacing();
 
+        ImGui::BeginTable(("scanner_btn_table" + _this->name).c_str(), 3);
+        ImGui::TableNextRow();
+        
+        ImGui::TableSetColumnIndex(0);
+        if (ImGui::Button(("Add##scanner_add_" + _this->name).c_str(), ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
+            // Add button logic will go here
+        }
+
+        ImGui::TableSetColumnIndex(1);
+        if (ImGui::Button(("Remove##scanner_rem_" + _this->name).c_str(), ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
+            // Remove button logic will go here
+        }
+
+        ImGui::TableSetColumnIndex(2);
+        if (ImGui::Button(("Edit##scanner_edt_" + _this->name).c_str(), ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
+            // Edit button logic will go here
+        }
+
+        ImGui::EndTable();
+
         if (ImGui::BeginTable("excluded_frequency_table", 1, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY, ImVec2(0, 200.0f * style::uiScale))) {
             ImGui::TableSetupColumn("Frequency", ImGuiTableColumnFlags_WidthStretch);
             ImGui::TableHeadersRow();
