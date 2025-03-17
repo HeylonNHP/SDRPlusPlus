@@ -59,6 +59,15 @@ private:
         
         ImGui::TableSetColumnIndex(0);
         if (ImGui::Button(("Add##scanner_add_" + name).c_str(), ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
+            // Pre-populate with current frequency and bandwidth
+            if (gui::waterfall.selectedVFO == "") {
+                newExcludedFreq.frequency = gui::waterfall.getCenterFrequency();
+                newExcludedFreq.bandwidth = 0;
+            }
+            else {
+                newExcludedFreq.frequency = gui::waterfall.getCenterFrequency() + sigpath::vfoManager.getOffset(gui::waterfall.selectedVFO);
+                newExcludedFreq.bandwidth = sigpath::vfoManager.getBandwidth(gui::waterfall.selectedVFO);
+            }
             newExcludedFreqOpen = true;
         }
 
