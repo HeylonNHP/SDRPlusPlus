@@ -167,7 +167,9 @@ private:
         
         _this->drawExcludedFreqTable();
         
-        if (_this->running) { ImGui::BeginDisabled(); }
+        if (_this->running) { 
+            style::beginDisabled(); 
+        }
         ImGui::LeftLabel("Start");
         ImGui::SetNextItemWidth(menuWidth - ImGui::GetCursorPosX());
         if (ImGui::InputDouble("##start_freq_scanner", &_this->startFreq, 100.0, 100000.0, "%0.0f")) {
@@ -201,6 +203,9 @@ private:
         ImGui::LeftLabel("Level");
         ImGui::SetNextItemWidth(menuWidth - ImGui::GetCursorPosX());
         ImGui::SliderFloat("##scanner_level", &_this->level, -150.0, 0.0);
+        if (_this->running) { 
+            style::endDisabled(); 
+        }
 
         ImGui::BeginTable(("scanner_bottom_btn_table" + _this->name).c_str(), 2);
         ImGui::TableNextRow();
