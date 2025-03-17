@@ -83,8 +83,9 @@ private:
 
         ImGui::EndTable();
 
-        if (ImGui::BeginTable("excluded_frequency_table", 1, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY, ImVec2(0, 200.0f * style::uiScale))) {
+        if (ImGui::BeginTable("excluded_frequency_table", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY, ImVec2(0, 200.0f * style::uiScale))) {
             ImGui::TableSetupColumn("Frequency", ImGuiTableColumnFlags_WidthStretch);
+            ImGui::TableSetupColumn("Bandwidth", ImGuiTableColumnFlags_WidthStretch);
             ImGui::TableHeadersRow();
             ImGui::EndTable();
         }
