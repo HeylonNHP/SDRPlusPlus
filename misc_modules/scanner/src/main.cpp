@@ -43,6 +43,18 @@ private:
         ScannerModule* _this = (ScannerModule*)ctx;
         float menuWidth = ImGui::GetContentRegionAvail().x;
         
+        // Excluded Frequency Table
+        ImGui::Spacing();
+        ImGui::TextUnformatted("Excluded frequencies");
+        ImGui::Separator();
+        ImGui::Spacing();
+
+        if (ImGui::BeginTable("excluded_frequency_table", 1, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY, ImVec2(0, 200.0f * style::uiScale))) {
+            ImGui::TableSetupColumn("Frequency", ImGuiTableColumnFlags_WidthStretch);
+            ImGui::TableHeadersRow();
+            ImGui::EndTable();
+        }
+        
         if (_this->running) { ImGui::BeginDisabled(); }
         ImGui::LeftLabel("Start");
         ImGui::SetNextItemWidth(menuWidth - ImGui::GetCursorPosX());
@@ -74,8 +86,6 @@ private:
         if (ImGui::InputInt("##linger_time_scanner", &_this->lingerTime, 100, 1000)) {
             _this->lingerTime = std::clamp<int>(_this->lingerTime, 100, 10000.0);
         }
-        if (_this->running) { ImGui::EndDisabled(); }
-
         ImGui::LeftLabel("Level");
         ImGui::SetNextItemWidth(menuWidth - ImGui::GetCursorPosX());
         ImGui::SliderFloat("##scanner_level", &_this->level, -150.0, 0.0);
