@@ -21,6 +21,12 @@ struct ExcludedFreq {
     bool selected;  // Add selection state
 };
 
+struct DialogState {
+    bool editOpen = false;    // Flag to track if the edit dialog is open
+    bool newOpen = false;     // Flag to track if the new dialog is open
+    bool initialized = false; // Flag to track if the dialog has been initialized
+};
+
 public:
     ScannerModule(std::string name) {
         this->name = name;
@@ -68,7 +74,7 @@ private:
                 newExcludedFreq.frequency = gui::waterfall.getCenterFrequency() + sigpath::vfoManager.getOffset(gui::waterfall.selectedVFO);
                 newExcludedFreq.bandwidth = sigpath::vfoManager.getBandwidth(gui::waterfall.selectedVFO);
             }
-            newExcludedFreqOpen = true;
+            dialogState.newOpen = true;
         }
 
         ImGui::TableSetColumnIndex(1);
@@ -87,7 +93,7 @@ private:
         ImGui::TableSetColumnIndex(2);
         if (ImGui::Button(("Edit##scanner_edt_" + name).c_str(), ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
             // Edit button logic will go here
-            editExcludedFreqOpen = true;
+            dialogState.editOpen = true;
         }
 
         ImGui::EndTable();
@@ -136,9 +142,9 @@ private:
         ImGui::OpenPopup(id.c_str());
 
         // If editing, initialize with existing values
-        if (isEdit && freqToEdit != nullptr && !dialogInitialized) {
+        if (isEdit && freqToEdit != nullptr && !dialogState.initialized) {
             newExcludedFreq = *freqToEdit;
-            dialogInitialized = true;
+            dialogState.initialized = true;
         }
 
         if (ImGui::BeginPopup(id.c_str(), ImGuiWindowFlags_NoResize)) {
@@ -162,12 +168,12 @@ private:
                     // Add new frequency to the list
                     excludedFreqs.push_back(newExcludedFreq);
                 }
-                dialogInitialized = false;
+                dialogState.initialized = false;
                 open = false;
             }
             ImGui::SameLine();
             if (ImGui::Button("Cancel")) {
-                dialogInitialized = false;
+                dialogState.initialized = false;
                 open = false;
             }
             ImGui::EndPopup();
@@ -260,12 +266,12 @@ private:
             }
         }
 
-        if (_this->newExcludedFreqOpen) {
-            _this->newExcludedFreqOpen = _this->excludedFreqDialog();
+        if (_this->dialogState.newOpen) {
+            _this->dialogState.newOpen = _this->excludedFreqDialog();
         }
 
-        if(_this->editExcludedFreqOpen) {
-            _this->editExcludedFreqOpen = _this->excludedFreqDialog(true, &_this->newExcludedFreq);
+        if(_this->dialogState.editOpen) {
+            _this->dialogState.editOpen = _this->excludedFreqDialog(true, &_this->newExcludedFreq);
         }
     }
 
@@ -435,9 +441,7 @@ private:
     std::vector<ExcludedFreq> excludedFreqs;  // Store excluded frequencies
     ExcludedFreq newExcludedFreq;  // For the new excluded frequency dialog
 
-    bool editExcludedFreqOpen = false;  // Flag to track if the dialog is open
-    bool newExcludedFreqOpen = false;  // Flag to track if the dialog is open
-    bool dialogInitialized = false;
+    DialogState dialogState;  // State for the excluded frequency dialog
 
     bool running = false;
     //std::string selectedVFO = "Radio";
