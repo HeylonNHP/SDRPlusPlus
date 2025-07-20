@@ -46,8 +46,6 @@ public:
     }
 
 private:
-    std::vector<ExcludedFreq> excludedFreqs;  // Store excluded frequencies
-
     void drawExcludedFreqTable() {
         // Excluded Frequency Table
         ImGui::Spacing();
@@ -88,6 +86,7 @@ private:
         ImGui::TableSetColumnIndex(2);
         if (ImGui::Button(("Edit##scanner_edt_" + name).c_str(), ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
             // Edit button logic will go here
+            editExcludedFreqOpen = true;
         }
 
         ImGui::EndTable();
@@ -125,35 +124,49 @@ private:
         }
     }
 
-    bool newExcludedFreqDialog() {
+    bool excludedFreqDialog(bool isEdit = false, ExcludedFreq* freqToEdit = nullptr) {
         bool open = true;
         gui::mainWindow.lockWaterfallControls = true;
 
         float menuWidth = ImGui::GetContentRegionAvail().x;
 
-        std::string id = "Add##scanner_add_freq_popup_" + name;
+        // Use different titles for Add/Edit modes
+        std::string id = (isEdit ? "Edit##scanner_edit_freq_popup_" : "Add##scanner_add_freq_popup_") + name;
         ImGui::OpenPopup(id.c_str());
+
+        // If editing, initialize with existing values
+        if (isEdit && freqToEdit != nullptr && !dialogInitialized) {
+            newExcludedFreq = *freqToEdit;
+            dialogInitialized = true;
+        }
 
         if (ImGui::BeginPopup(id.c_str(), ImGuiWindowFlags_NoResize)) {
             ImGui::LeftLabel("Frequency");
             ImGui::SetNextItemWidth(menuWidth - ImGui::GetCursorPosX());
-            if (ImGui::InputDouble(("##scanner_add_freq_input" + name).c_str(), &newExcludedFreq.frequency, 100.0, 100000.0, "%0.0f")) {
+            if (ImGui::InputDouble(("##scanner_freq_input" + name).c_str(), &newExcludedFreq.frequency, 100.0, 100000.0, "%0.0f")) {
                 newExcludedFreq.frequency = round(newExcludedFreq.frequency);
             }
 
             ImGui::LeftLabel("Bandwidth");
             ImGui::SetNextItemWidth(menuWidth - ImGui::GetCursorPosX());
-            if (ImGui::InputDouble(("##scanner_add_bw_input" + name).c_str(), &newExcludedFreq.bandwidth, 100.0, 100000.0, "%0.0f")) {
+            if (ImGui::InputDouble(("##scanner_bw_input" + name).c_str(), &newExcludedFreq.bandwidth, 100.0, 100000.0, "%0.0f")) {
                 newExcludedFreq.bandwidth = round(newExcludedFreq.bandwidth);
             }
 
-            if (ImGui::Button("Add")) {
-                // Add the new frequency to the list
-                excludedFreqs.push_back(newExcludedFreq);
+            if (ImGui::Button(isEdit ? "Save" : "Add")) {
+                if (isEdit && freqToEdit != nullptr) {
+                    // Update existing frequency
+                    *freqToEdit = newExcludedFreq;
+                } else {
+                    // Add new frequency to the list
+                    excludedFreqs.push_back(newExcludedFreq);
+                }
+                dialogInitialized = false;
                 open = false;
             }
             ImGui::SameLine();
             if (ImGui::Button("Cancel")) {
+                dialogInitialized = false;
                 open = false;
             }
             ImGui::EndPopup();
@@ -247,7 +260,11 @@ private:
         }
 
         if (_this->newExcludedFreqOpen) {
-            _this->newExcludedFreqOpen = _this->newExcludedFreqDialog();
+            _this->newExcludedFreqOpen = _this->excludedFreqDialog();
+        }
+
+        if(_this->editExcludedFreqOpen) {
+            _this->editExcludedFreqOpen = _this->excludedFreqDialog(true, &_this->newExcludedFreq);
         }
     }
 
@@ -413,9 +430,14 @@ private:
 
     std::string name;
     bool enabled = true;
+
+    std::vector<ExcludedFreq> excludedFreqs;  // Store excluded frequencies
     ExcludedFreq newExcludedFreq;  // For the new excluded frequency dialog
+
+    bool editExcludedFreqOpen = false;  // Flag to track if the dialog is open
     bool newExcludedFreqOpen = false;  // Flag to track if the dialog is open
-    
+    bool dialogInitialized = false;
+
     bool running = false;
     //std::string selectedVFO = "Radio";
     double startFreq = 88000000.0;
