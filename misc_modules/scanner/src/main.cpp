@@ -15,17 +15,17 @@ SDRPP_MOD_INFO{
 
 class ScannerModule : public ModuleManager::Instance {
 
-struct ExcludedFreq {
-    double frequency;
-    double bandwidth;
-    bool selected;  // Add selection state
-};
+    struct ExcludedFreq {
+        double frequency;
+        double bandwidth;
+        bool selected; // Add selection state
+    };
 
-struct DialogState {
-    bool editOpen = false;    // Flag to track if the edit dialog is open
-    bool newOpen = false;     // Flag to track if the new dialog is open
-    bool initialized = false; // Flag to track if the dialog has been initialized
-};
+    struct DialogState {
+        bool editOpen = false;    // Flag to track if the edit dialog is open
+        bool newOpen = false;     // Flag to track if the new dialog is open
+        bool initialized = false; // Flag to track if the dialog has been initialized
+    };
 
 public:
     ScannerModule(std::string name) {
@@ -62,7 +62,7 @@ private:
 
         ImGui::BeginTable(("scanner_btn_table" + name).c_str(), 3);
         ImGui::TableNextRow();
-        
+
         ImGui::TableSetColumnIndex(0);
         if (ImGui::Button(("Add##scanner_add_" + name).c_str(), ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
             // Pre-populate with current frequency and bandwidth
@@ -84,10 +84,8 @@ private:
                 std::remove_if(
                     excludedFreqs.begin(),
                     excludedFreqs.end(),
-                    [](const ExcludedFreq& freq) { return freq.selected; }
-                ),
-                excludedFreqs.end()
-            );
+                    [](const ExcludedFreq& freq) { return freq.selected; }),
+                excludedFreqs.end());
         }
 
         ImGui::TableSetColumnIndex(2);
@@ -102,12 +100,12 @@ private:
             ImGui::TableSetupColumn("Frequency", ImGuiTableColumnFlags_WidthStretch);
             ImGui::TableSetupColumn("Bandwidth", ImGuiTableColumnFlags_WidthStretch);
             ImGui::TableHeadersRow();
-            
+
             // Display all excluded frequencies
             for (auto& freq : excludedFreqs) {
                 ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);
-                
+
                 // Make the entire row selectable
                 if (ImGui::Selectable(("##scanner_excl_freq_" + std::to_string(freq.frequency)).c_str(), &freq.selected, ImGuiSelectableFlags_SpanAllColumns)) {
                     // If shift or control isn't pressed, deselect all others
@@ -119,89 +117,90 @@ private:
                         }
                     }
                 }
-                
+
                 ImGui::SameLine();
                 ImGui::Text("%.0f", freq.frequency);
-                
+
                 ImGui::TableSetColumnIndex(1);
                 ImGui::Text("%.0f", freq.bandwidth);
             }
-            
+
             ImGui::EndTable();
         }
     }
 
     bool excludedFreqDialog(bool isEdit = false) {
-    bool open = true;
-    gui::mainWindow.lockWaterfallControls = true;
+        bool open = true;
+        gui::mainWindow.lockWaterfallControls = true;
 
-    ExcludedFreq* freqToEdit = nullptr;
-    if (isEdit) {
-        for (auto& freq : excludedFreqs) {
-            if (freq.selected) {
-                freqToEdit = &freq;
-                break;
+        ExcludedFreq* freqToEdit = nullptr;
+        if (isEdit) {
+            for (auto& freq : excludedFreqs) {
+                if (freq.selected) {
+                    freqToEdit = &freq;
+                    break;
+                }
+            }
+            if (freqToEdit == nullptr) {
+                dialogState.initialized = false;
+                return false;
             }
         }
-        if (freqToEdit == nullptr) {
-            dialogState.initialized = false;
-            return false;
-        }
-    }
 
-    float menuWidth = ImGui::GetContentRegionAvail().x;
+        float menuWidth = ImGui::GetContentRegionAvail().x;
 
-    std::string id = (isEdit ? "Edit##scanner_edit_freq_popup_" : "Add##scanner_add_freq_popup_") + name;
-    ImGui::OpenPopup(id.c_str());
+        std::string id = (isEdit ? "Edit##scanner_edit_freq_popup_" : "Add##scanner_add_freq_popup_") + name;
+        ImGui::OpenPopup(id.c_str());
 
         // If editing, initialize with existing values
-    if (isEdit && !dialogState.initialized) {
-        newExcludedFreq = *freqToEdit;
-        dialogState.initialized = true;
-    }
-
-    if (ImGui::BeginPopup(id.c_str(), ImGuiWindowFlags_NoResize)) {
-        ImGui::LeftLabel("Frequency");
-        ImGui::SetNextItemWidth(menuWidth - ImGui::GetCursorPosX());
-        if (ImGui::InputDouble(("##scanner_freq_input" + name).c_str(), &newExcludedFreq.frequency, 100.0, 100000.0, "%0.0f")) {
-            newExcludedFreq.frequency = round(newExcludedFreq.frequency);
+        if (isEdit && !dialogState.initialized) {
+            newExcludedFreq = *freqToEdit;
+            dialogState.initialized = true;
         }
 
-        ImGui::LeftLabel("Bandwidth");
-        ImGui::SetNextItemWidth(menuWidth - ImGui::GetCursorPosX());
-        if (ImGui::InputDouble(("##scanner_bw_input" + name).c_str(), &newExcludedFreq.bandwidth, 100.0, 100000.0, "%0.0f")) {
-            newExcludedFreq.bandwidth = round(newExcludedFreq.bandwidth);
-        }
-
-        if (ImGui::Button(isEdit ? "Save" : "Add")) {
-            if (isEdit && freqToEdit != nullptr) {
-                // Update existing frequency
-                *freqToEdit = newExcludedFreq;
-            } else {
-                // Add new frequency to the list
-                excludedFreqs.push_back(newExcludedFreq);
+        if (ImGui::BeginPopup(id.c_str(), ImGuiWindowFlags_NoResize)) {
+            ImGui::LeftLabel("Frequency");
+            ImGui::SetNextItemWidth(menuWidth - ImGui::GetCursorPosX());
+            if (ImGui::InputDouble(("##scanner_freq_input" + name).c_str(), &newExcludedFreq.frequency, 100.0, 100000.0, "%0.0f")) {
+                newExcludedFreq.frequency = round(newExcludedFreq.frequency);
             }
-            dialogState.initialized = false;
-            open = false;
+
+            ImGui::LeftLabel("Bandwidth");
+            ImGui::SetNextItemWidth(menuWidth - ImGui::GetCursorPosX());
+            if (ImGui::InputDouble(("##scanner_bw_input" + name).c_str(), &newExcludedFreq.bandwidth, 100.0, 100000.0, "%0.0f")) {
+                newExcludedFreq.bandwidth = round(newExcludedFreq.bandwidth);
+            }
+
+            if (ImGui::Button(isEdit ? "Save" : "Add")) {
+                if (isEdit && freqToEdit != nullptr) {
+                    // Update existing frequency
+                    *freqToEdit = newExcludedFreq;
+                }
+                else {
+                    // Add new frequency to the list
+                    excludedFreqs.push_back(newExcludedFreq);
+                }
+                dialogState.initialized = false;
+                open = false;
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Cancel")) {
+                dialogState.initialized = false;
+                open = false;
+            }
+            ImGui::EndPopup();
         }
-        ImGui::SameLine();
-        if (ImGui::Button("Cancel")) {
-            dialogState.initialized = false;
-            open = false;
-        }
-        ImGui::EndPopup();
+        return open;
     }
-    return open;
-}
 
     static void menuHandler(void* ctx) {
         ScannerModule* _this = (ScannerModule*)ctx;
         float menuWidth = ImGui::GetContentRegionAvail().x;
-        
+
         _this->drawExcludedFreqTable();
-        
-        if (_this->running) { 
-            style::beginDisabled(); 
+
+        if (_this->running) {
+            style::beginDisabled();
         }
         ImGui::LeftLabel("Start");
         ImGui::SetNextItemWidth(menuWidth - ImGui::GetCursorPosX());
@@ -236,8 +235,8 @@ private:
         ImGui::LeftLabel("Level");
         ImGui::SetNextItemWidth(menuWidth - ImGui::GetCursorPosX());
         ImGui::SliderFloat("##scanner_level", &_this->level, -150.0, 0.0);
-        if (_this->running) { 
-            style::endDisabled(); 
+        if (_this->running) {
+            style::endDisabled();
         }
 
         ImGui::BeginTable(("scanner_bottom_btn_table" + _this->name).c_str(), 2);
@@ -283,7 +282,7 @@ private:
             _this->dialogState.newOpen = _this->excludedFreqDialog();
         }
 
-        if(_this->dialogState.editOpen) {
+        if (_this->dialogState.editOpen) {
             _this->dialogState.editOpen = _this->excludedFreqDialog(true);
         }
     }
@@ -343,7 +342,7 @@ private:
 
                 if (receiving) {
                     flog::warn("Receiving");
-                
+
                     float maxLevel = getMaxLevel(data, current, vfoWidth, dataWidth, wfStart, wfWidth);
                     if (maxLevel >= level) {
                         lastSignalTime = now;
@@ -356,13 +355,13 @@ private:
                     flog::warn("Seeking signal");
                     double bottomLimit = current;
                     double topLimit = current;
-                    
+
                     // Search for a signal in scan direction
                     if (findSignal(scanUp, bottomLimit, topLimit, wfStart, wfEnd, wfWidth, vfoWidth, data, dataWidth)) {
                         gui::waterfall.releaseLatestFFT();
                         continue;
                     }
-                    
+
                     // Search for signal in the inverse scan direction if direction isn't enforced
                     if (!reverseLock) {
                         if (findSignal(!scanUp, bottomLimit, topLimit, wfStart, wfEnd, wfWidth, vfoWidth, data, dataWidth)) {
@@ -371,7 +370,7 @@ private:
                         }
                     }
                     else { reverseLock = false; }
-                    
+
 
                     // There is no signal on the visible spectrum, tune in scan direction and retry
                     if (scanUp) {
@@ -384,7 +383,7 @@ private:
                     }
 
                     // If the new current frequency is outside the visible bandwidth, wait for retune
-                    if (current - (vfoWidth/2.0) < wfStart || current + (vfoWidth/2.0) > wfEnd) {
+                    if (current - (vfoWidth / 2.0) < wfStart || current + (vfoWidth / 2.0) > wfEnd) {
                         lastTuneTime = now;
                         tuning = true;
                     }
@@ -400,8 +399,8 @@ private:
         bool found = false;
         double freq = current;
         for (freq += scanDir ? interval : -interval;
-            scanDir ? (freq <= stopFreq) : (freq >= startFreq);
-            freq += scanDir ? interval : -interval) {
+             scanDir ? (freq <= stopFreq) : (freq >= startFreq);
+             freq += scanDir ? interval : -interval) {
 
             // Check if frequency is within any excluded range
             bool isExcluded = false;
@@ -418,12 +417,12 @@ private:
             }
 
             // Check if signal is within bounds
-            if (freq - (vfoWidth/2.0) < wfStart) { break; }
-            if (freq + (vfoWidth/2.0) > wfEnd) { break; }
+            if (freq - (vfoWidth / 2.0) < wfStart) { break; }
+            if (freq + (vfoWidth / 2.0) > wfEnd) { break; }
 
             if (freq < bottomLimit) { bottomLimit = freq; }
             if (freq > topLimit) { topLimit = freq; }
-            
+
             // Check signal level
             float maxLevel = getMaxLevel(data, freq, vfoWidth * (passbandRatio * 0.01f), dataWidth, wfStart, wfWidth);
             if (maxLevel >= level) {
@@ -437,8 +436,8 @@ private:
     }
 
     float getMaxLevel(float* data, double freq, double width, int dataWidth, double wfStart, double wfWidth) {
-        double low = freq - (width/2.0);
-        double high = freq + (width/2.0);
+        double low = freq - (width / 2.0);
+        double high = freq + (width / 2.0);
         int lowId = std::clamp<int>((low - wfStart) * (double)dataWidth / wfWidth, 0, dataWidth - 1);
         int highId = std::clamp<int>((high - wfStart) * (double)dataWidth / wfWidth, 0, dataWidth - 1);
         float max = -INFINITY;
@@ -451,13 +450,13 @@ private:
     std::string name;
     bool enabled = true;
 
-    std::vector<ExcludedFreq> excludedFreqs;  // Store excluded frequencies
-    ExcludedFreq newExcludedFreq;  // For the new excluded frequency dialog
+    std::vector<ExcludedFreq> excludedFreqs; // Store excluded frequencies
+    ExcludedFreq newExcludedFreq;            // For the new excluded frequency dialog
 
-    DialogState dialogState;  // State for the excluded frequency dialog
+    DialogState dialogState; // State for the excluded frequency dialog
 
     bool running = false;
-    //std::string selectedVFO = "Radio";
+    // std::string selectedVFO = "Radio";
     double startFreq = 88000000.0;
     double stopFreq = 108000000.0;
     double interval = 100000.0;
