@@ -131,55 +131,68 @@ private:
         }
     }
 
-    bool excludedFreqDialog(bool isEdit = false, ExcludedFreq* freqToEdit = nullptr) {
-        bool open = true;
-        gui::mainWindow.lockWaterfallControls = true;
+    bool excludedFreqDialog(bool isEdit = false) {
+    bool open = true;
+    gui::mainWindow.lockWaterfallControls = true;
 
-        float menuWidth = ImGui::GetContentRegionAvail().x;
+    ExcludedFreq* freqToEdit = nullptr;
+    if (isEdit) {
+        for (auto& freq : excludedFreqs) {
+            if (freq.selected) {
+                freqToEdit = &freq;
+                break;
+            }
+        }
+        if (freqToEdit == nullptr) {
+            dialogState.initialized = false;
+            return false;
+        }
+    }
 
-        // Use different titles for Add/Edit modes
-        std::string id = (isEdit ? "Edit##scanner_edit_freq_popup_" : "Add##scanner_add_freq_popup_") + name;
-        ImGui::OpenPopup(id.c_str());
+    float menuWidth = ImGui::GetContentRegionAvail().x;
+
+    std::string id = (isEdit ? "Edit##scanner_edit_freq_popup_" : "Add##scanner_add_freq_popup_") + name;
+    ImGui::OpenPopup(id.c_str());
 
         // If editing, initialize with existing values
-        if (isEdit && freqToEdit != nullptr && !dialogState.initialized) {
-            newExcludedFreq = *freqToEdit;
-            dialogState.initialized = true;
-        }
-
-        if (ImGui::BeginPopup(id.c_str(), ImGuiWindowFlags_NoResize)) {
-            ImGui::LeftLabel("Frequency");
-            ImGui::SetNextItemWidth(menuWidth - ImGui::GetCursorPosX());
-            if (ImGui::InputDouble(("##scanner_freq_input" + name).c_str(), &newExcludedFreq.frequency, 100.0, 100000.0, "%0.0f")) {
-                newExcludedFreq.frequency = round(newExcludedFreq.frequency);
-            }
-
-            ImGui::LeftLabel("Bandwidth");
-            ImGui::SetNextItemWidth(menuWidth - ImGui::GetCursorPosX());
-            if (ImGui::InputDouble(("##scanner_bw_input" + name).c_str(), &newExcludedFreq.bandwidth, 100.0, 100000.0, "%0.0f")) {
-                newExcludedFreq.bandwidth = round(newExcludedFreq.bandwidth);
-            }
-
-            if (ImGui::Button(isEdit ? "Save" : "Add")) {
-                if (isEdit && freqToEdit != nullptr) {
-                    // Update existing frequency
-                    *freqToEdit = newExcludedFreq;
-                } else {
-                    // Add new frequency to the list
-                    excludedFreqs.push_back(newExcludedFreq);
-                }
-                dialogState.initialized = false;
-                open = false;
-            }
-            ImGui::SameLine();
-            if (ImGui::Button("Cancel")) {
-                dialogState.initialized = false;
-                open = false;
-            }
-            ImGui::EndPopup();
-        }
-        return open;
+    if (isEdit && !dialogState.initialized) {
+        newExcludedFreq = *freqToEdit;
+        dialogState.initialized = true;
     }
+
+    if (ImGui::BeginPopup(id.c_str(), ImGuiWindowFlags_NoResize)) {
+        ImGui::LeftLabel("Frequency");
+        ImGui::SetNextItemWidth(menuWidth - ImGui::GetCursorPosX());
+        if (ImGui::InputDouble(("##scanner_freq_input" + name).c_str(), &newExcludedFreq.frequency, 100.0, 100000.0, "%0.0f")) {
+            newExcludedFreq.frequency = round(newExcludedFreq.frequency);
+        }
+
+        ImGui::LeftLabel("Bandwidth");
+        ImGui::SetNextItemWidth(menuWidth - ImGui::GetCursorPosX());
+        if (ImGui::InputDouble(("##scanner_bw_input" + name).c_str(), &newExcludedFreq.bandwidth, 100.0, 100000.0, "%0.0f")) {
+            newExcludedFreq.bandwidth = round(newExcludedFreq.bandwidth);
+        }
+
+        if (ImGui::Button(isEdit ? "Save" : "Add")) {
+            if (isEdit && freqToEdit != nullptr) {
+                // Update existing frequency
+                *freqToEdit = newExcludedFreq;
+            } else {
+                // Add new frequency to the list
+                excludedFreqs.push_back(newExcludedFreq);
+            }
+            dialogState.initialized = false;
+            open = false;
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Cancel")) {
+            dialogState.initialized = false;
+            open = false;
+        }
+        ImGui::EndPopup();
+    }
+    return open;
+}
 
     static void menuHandler(void* ctx) {
         ScannerModule* _this = (ScannerModule*)ctx;
@@ -271,7 +284,7 @@ private:
         }
 
         if(_this->dialogState.editOpen) {
-            _this->dialogState.editOpen = _this->excludedFreqDialog(true, &_this->newExcludedFreq);
+            _this->dialogState.editOpen = _this->excludedFreqDialog(true);
         }
     }
 
