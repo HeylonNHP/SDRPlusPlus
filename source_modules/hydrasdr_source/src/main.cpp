@@ -36,6 +36,9 @@ public:
         ports.define("rx1", "RX1", RF_PORT_RX1);
         ports.define("rx2", "RX2", RF_PORT_RX2);
 
+        regStr[0] = 0;
+        valStr[0] = 0;
+
         sampleRate = 10000000.0;
 
         handler.ctx = this;
@@ -97,9 +100,7 @@ public:
 
         // Get device info
         std::string fakeName = "HydraSDR USB";
-        devList.push_back(0xDEADBEEF);
-        devListTxt += fakeName;
-        devListTxt += '\0';
+        devices.define(fakeName, 0);
 #endif
     }
 
@@ -568,6 +569,9 @@ private:
             }
         }
     }
+
+    char valStr[256];
+    char regStr[256];
 
     static int callback(hydrasdr_transfer_t* transfer) {
         HydraSDRSourceModule* _this = (HydraSDRSourceModule*)transfer->ctx;
