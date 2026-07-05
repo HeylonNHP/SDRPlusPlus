@@ -64,7 +64,7 @@ private:
         ImGui::TableNextRow();
 
         ImGui::TableSetColumnIndex(0);
-        if (ImGui::Button(("Add##scanner_add_" + name).c_str(), ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
+        if (ImGui::Button(("Add##_scanner_add_" + name).c_str(), ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
             // Pre-populate with current frequency and bandwidth
             if (gui::waterfall.selectedVFO == "") {
                 newExcludedFreq.frequency = gui::waterfall.getCenterFrequency();
@@ -78,7 +78,7 @@ private:
         }
 
         ImGui::TableSetColumnIndex(1);
-        if (ImGui::Button(("Remove##scanner_rem_" + name).c_str(), ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
+        if (ImGui::Button(("Remove##_scanner_remove_" + name).c_str(), ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
             // Remove selected frequencies
             excludedFreqs.erase(
                 std::remove_if(
@@ -89,7 +89,7 @@ private:
         }
 
         ImGui::TableSetColumnIndex(2);
-        if (ImGui::Button(("Edit##scanner_edt_" + name).c_str(), ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
+        if (ImGui::Button(("Edit##_scanner_edit_" + name).c_str(), ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
             // Edit button logic will go here
             dialogState.editOpen = true;
         }
@@ -161,13 +161,13 @@ private:
         if (ImGui::BeginPopup(id.c_str(), ImGuiWindowFlags_NoResize)) {
             ImGui::LeftLabel("Frequency");
             ImGui::SetNextItemWidth(menuWidth - ImGui::GetCursorPosX());
-            if (ImGui::InputDouble(("##scanner_freq_input" + name).c_str(), &newExcludedFreq.frequency, 100.0, 100000.0, "%0.0f")) {
+            if (ImGui::InputDouble(("##_scanner_freq_input_" + name).c_str(), &newExcludedFreq.frequency, 100.0, 100000.0, "%0.0f")) {
                 newExcludedFreq.frequency = round(newExcludedFreq.frequency);
             }
 
             ImGui::LeftLabel("Bandwidth");
             ImGui::SetNextItemWidth(menuWidth - ImGui::GetCursorPosX());
-            if (ImGui::InputDouble(("##scanner_bw_input" + name).c_str(), &newExcludedFreq.bandwidth, 100.0, 100000.0, "%0.0f")) {
+            if (ImGui::InputDouble(("##_scanner_bw_input_" + name).c_str(), &newExcludedFreq.bandwidth, 100.0, 100000.0, "%0.0f")) {
                 newExcludedFreq.bandwidth = round(newExcludedFreq.bandwidth);
             }
 
